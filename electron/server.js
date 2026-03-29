@@ -2,7 +2,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const axios = require('axios');
 
-const API_URL = 'http://localhost:8000';
+const API_URL = 'http://127.0.0.1:8000';
 const HEALTH_CHECK_URL = `${API_URL}/health`;
 const HEALTH_CHECK_INTERVAL = 1000; // 1 second
 const HEALTH_CHECK_TIMEOUT = 30000; // 30 seconds
@@ -21,7 +21,10 @@ async function startServer() {
     // Determine Python executable
     const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
 
-    console.log(`Starting Python server with: ${pythonExecutable} ${pythonScript}`);
+    console.log(`[Server] Starting Python server...`);
+    console.log(`[Server] Python: ${pythonExecutable}`);
+    console.log(`[Server] Script: ${pythonScript}`);
+    console.log(`[Server] Working Dir: ${backendDir}`);
 
     pythonProcess = spawn(pythonExecutable, [pythonScript], {
       cwd: backendDir,
@@ -29,21 +32,25 @@ async function startServer() {
       detached: false,
     });
 
+    console.log(`[Server] Process spawned with PID: ${pythonProcess.pid}`);
+
     let isResolved = false;
 
     // Handle stdout
     pythonProcess.stdout.on('data', (data) => {
-      console.log(`[Server] ${data.toString().trim()}`);
+      const msg = data.toString().trim();
+      console.log(`[Server stdout] ${msg}`);
     });
 
     // Handle stderr
     pythonProcess.stderr.on('data', (data) => {
-      console.error(`[Server Error] ${data.toString().trim()}`);
+      const msg = data.toString().trim();
+      console.log(`[Server stderr] ${msg}`);
     });
 
     // Handle errors
     pythonProcess.on('error', (err) => {
-      console.error('Failed to start Python server:', err);
+      console.error(`[Server] Failed to start: ${err.message}`);
       if (!isResolved) {
         isResolved = true;
         reject(new Error(`Failed to start server: ${err.message}`));
@@ -52,22 +59,25 @@ async function startServer() {
 
     // Handle exit
     pythonProcess.on('exit', (code, signal) => {
-      console.log(`Python server exited with code ${code}, signal ${signal}`);
+      console.log(`[Server] Process exited with code ${code}, signal ${signal}`);
       pythonProcess = null;
     });
+
+    console.log(`[Server] Waiting for server to be ready...`);
 
     // Wait for server to be healthy
     waitForServer()
       .then(() => {
         if (!isResolved) {
           isResolved = true;
-          console.log('Python server is ready!');
+          console.log('[Server] Server is ready!');
           resolve();
         }
       })
       .catch((err) => {
         if (!isResolved) {
           isResolved = true;
+          console.error(`[Server] Error: ${err.message}`);
           reject(err);
         }
       });
