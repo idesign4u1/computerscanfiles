@@ -1,0 +1,66 @@
+{
+  "name": "disk-space-analyzer",
+  "version": "1.0.0",
+  "description": "Local disk space analyzer desktop application",
+  "main": "main.js",
+  "homepage": "./",
+  "scripts": {
+    "start": "electron .",
+    "dev": "concurrently \"npm run react-dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "react-dev": "cd ../frontend && npm start",
+    "build": "cd ../frontend && npm run build && electron-builder",
+    "build-unpacked": "electron-builder --dir",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "child-process-promise": "^2.3.0"
+  },
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4",
+    "electron-is-dev": "^2.0.0",
+    "concurrently": "^8.2.0",
+    "wait-on": "^7.0.1"
+  },
+  "build": {
+    "appId": "com.diskspaceanalyzer.app",
+    "productName": "Disk Space Analyzer",
+    "files": [
+      "main.js",
+      "server.js",
+      "preload.js",
+      "../frontend/build",
+      "../backend",
+      "node_modules",
+      "assets"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Disk Space Analyzer"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ]
+    }
+  }
+}

@@ -2,7 +2,7 @@
   "name": "disk-space-analyzer",
   "version": "1.0.0",
   "description": "Local disk space analyzer application",
-  "type": "module",
+  "homepage": "./",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
