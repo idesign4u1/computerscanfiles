@@ -83,13 +83,17 @@ async function waitForServer() {
 
   while (Date.now() - startTime < HEALTH_CHECK_TIMEOUT) {
     try {
+      console.log(`[Health Check] Attempting to connect to ${HEALTH_CHECK_URL}...`);
       const response = await axios.get(HEALTH_CHECK_URL, { timeout: 2000 });
+      console.log('[Health Check] Response:', response.data);
       if (response.data && response.data.status === 'ok') {
+        console.log('[Health Check] Server is healthy!');
         return;
       }
     } catch (err) {
       // Server not ready yet, wait and retry
-      console.log('Waiting for server...');
+      const elapsed = Date.now() - startTime;
+      console.log(`[Health Check] Failed (${elapsed}ms): ${err.message}`);
     }
 
     // Wait before retrying
