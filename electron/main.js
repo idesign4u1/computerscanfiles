@@ -1,50 +1,14 @@
 const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
-const { spawn } = require('child_process');
+const { startServer, stopServer } = require('./server');
 
 let mainWindow;
-let pythonProcess;
 
 // Determine if running in development or production
 const isDevelopment = isDev;
 console.log('Is Development:', isDevelopment);
 console.log('App Path:', app.getAppPath());
-
-/**
- * Start Python FastAPI server
- */
-function startPythonServer() {
-  const pythonScript = path.join(__dirname, '../backend/main.py');
-  const pythonPath = process.platform === 'win32' ? 'python' : 'python3';
-
-  console.log('Starting Python server...');
-  pythonProcess = spawn(pythonPath, [pythonScript], {
-    cwd: path.join(__dirname, '../backend'),
-    stdio: 'pipe',
-  });
-
-  pythonProcess.stdout.on('data', (data) => {
-    console.log(`[Python] ${data.toString()}`);
-  });
-
-  pythonProcess.stderr.on('data', (data) => {
-    console.error(`[Python Error] ${data.toString()}`);
-  });
-
-  pythonProcess.on('error', (err) => {
-    console.error('Failed to start Python server:', err);
-  });
-
-  pythonProcess.on('exit', (code) => {
-    console.log(`Python server exited with code ${code}`);
-  });
-
-  // Give server time to start
-  return new Promise((resolve) => {
-    setTimeout(resolve, 2000);
-  });
-}
 
 /**
  * Create the main window
@@ -138,22 +102,29 @@ function createMenu() {
 app.on('ready', async () => {
   console.log('App starting...');
 
-  // Start Python server first
-  await startPythonServer();
+  try {
+    // Start Python server first
+    console.log('Initializing backend server...');
+    await startServer();
 
-  // Create window
-  createWindow();
-  createMenu();
+    // Create window
+    createWindow();
+    createMenu();
+  } catch (error) {
+    console.error('Failed to start application:', error);
+    app.quit();
+  }
 });
 
 /**
  * Quit when all windows are closed
  */
-app.on('window-all-closed', () => {
-  // Kill Python server
-  if (pythonProcess) {
-    console.log('Killing Python server...');
-    pythonProcess.kill();
+app.on('window-all-closed', async () => {
+  // Stop Python server
+  try {
+    await stopServer();
+  } catch (error) {
+    console.error('Error stopping server:', error);
   }
 
   if (process.platform !== 'darwin') {
