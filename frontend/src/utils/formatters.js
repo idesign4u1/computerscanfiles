@@ -77,7 +77,7 @@ export const getFileIcon = (fileName) => {
     // Archives
     zip: '📦',
     rar: '📦',
-    7z: '📦',
+    '7z': '📦',
   };
 
   return iconMap[ext] || '📄';
