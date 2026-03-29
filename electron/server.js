@@ -15,8 +15,8 @@ let pythonProcess = null;
  */
 async function startServer() {
   return new Promise((resolve, reject) => {
-    const pythonScript = path.join(__dirname, '../backend/main.py');
-    const backendDir = path.join(__dirname, '../backend');
+    const pythonScript = path.join(__dirname, './backend/main.py');
+    const backendDir = path.join(__dirname, './backend');
 
     // Determine Python executable
     const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';

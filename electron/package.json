@@ -30,10 +30,24 @@
       "main.js",
       "server.js",
       "preload.js",
-      "../frontend/build",
-      "../backend",
       "node_modules",
       "assets"
+    ],
+    "extraMetadata": {
+      "main": "main.js"
+    },
+    "asarUnpack": [
+      "backend/**/*"
+    ],
+    "extraFiles": [
+      {
+        "from": "../frontend/build",
+        "to": "frontend/build"
+      },
+      {
+        "from": "../backend",
+        "to": "backend"
+      }
     ],
     "directories": {
       "buildResources": "assets"
