@@ -5,6 +5,7 @@ import time
 from datetime import datetime, timedelta
 from app.services.storage import DatabaseManager
 import hashlib
+import zlib
 
 router = APIRouter()
 db = DatabaseManager()
@@ -312,3 +313,155 @@ async def get_file_age_stats(path: Optional[str] = None) -> Dict:
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get file age stats: {str(e)}")
+
+# File extensions and their compression ratios
+COMPRESSION_PROFILES = {
+    # Highly compressible formats
+    '.txt': {'ratio': 0.7, 'priority': 'high', 'category': 'Text'},
+    '.csv': {'ratio': 0.6, 'priority': 'high', 'category': 'Text'},
+    '.log': {'ratio': 0.5, 'priority': 'high', 'category': 'Text'},
+    '.json': {'ratio': 0.65, 'priority': 'high', 'category': 'Text'},
+    '.xml': {'ratio': 0.65, 'priority': 'high', 'category': 'Text'},
+    '.sql': {'ratio': 0.7, 'priority': 'high', 'category': 'Database'},
+    '.sql.bak': {'ratio': 0.7, 'priority': 'high', 'category': 'Database'},
+    '.db': {'ratio': 0.6, 'priority': 'medium', 'category': 'Database'},
+    '.sqlite': {'ratio': 0.6, 'priority': 'medium', 'category': 'Database'},
+
+    # Moderately compressible formats
+    '.doc': {'ratio': 0.8, 'priority': 'medium', 'category': 'Documents'},
+    '.docx': {'ratio': 0.85, 'priority': 'medium', 'category': 'Documents'},
+    '.xls': {'ratio': 0.7, 'priority': 'medium', 'category': 'Documents'},
+    '.xlsx': {'ratio': 0.8, 'priority': 'medium', 'category': 'Documents'},
+    '.ppt': {'ratio': 0.75, 'priority': 'medium', 'category': 'Documents'},
+    '.pptx': {'ratio': 0.8, 'priority': 'medium', 'category': 'Documents'},
+    '.pdf': {'ratio': 0.85, 'priority': 'medium', 'category': 'Documents'},
+
+    # Already compressed - skip
+    '.zip': {'ratio': 0.98, 'priority': 'low', 'category': 'Archives'},
+    '.rar': {'ratio': 0.98, 'priority': 'low', 'category': 'Archives'},
+    '.7z': {'ratio': 0.98, 'priority': 'low', 'category': 'Archives'},
+    '.tar': {'ratio': 0.5, 'priority': 'high', 'category': 'Archives'},
+    '.gz': {'ratio': 0.95, 'priority': 'low', 'category': 'Archives'},
+    '.bz2': {'ratio': 0.95, 'priority': 'low', 'category': 'Archives'},
+
+    # Media files - already compressed
+    '.jpg': {'ratio': 0.95, 'priority': 'low', 'category': 'Images'},
+    '.jpeg': {'ratio': 0.95, 'priority': 'low', 'category': 'Images'},
+    '.png': {'ratio': 0.9, 'priority': 'low', 'category': 'Images'},
+    '.gif': {'ratio': 0.95, 'priority': 'low', 'category': 'Images'},
+    '.mp4': {'ratio': 0.98, 'priority': 'low', 'category': 'Videos'},
+    '.avi': {'ratio': 0.98, 'priority': 'low', 'category': 'Videos'},
+    '.mkv': {'ratio': 0.98, 'priority': 'low', 'category': 'Videos'},
+    '.mov': {'ratio': 0.98, 'priority': 'low', 'category': 'Videos'},
+    '.mp3': {'ratio': 0.98, 'priority': 'low', 'category': 'Audio'},
+    '.wav': {'ratio': 0.3, 'priority': 'high', 'category': 'Audio'},
+    '.flac': {'ratio': 0.6, 'priority': 'medium', 'category': 'Audio'},
+}
+
+@router.get("/compression-analysis")
+async def analyze_compression_potential(path: Optional[str] = None) -> Dict:
+    """Analyze files for compression potential"""
+    try:
+        if not path:
+            path = "/"
+            if os.name == "nt":
+                path = "C:\\"
+
+        candidates = {
+            'high': [],
+            'medium': [],
+            'low': []
+        }
+
+        total_compressible = 0
+        potential_savings = 0
+        by_category = {}
+
+        # Walk through directory
+        for root, dirs, files in os.walk(path):
+            dirs[:] = [d for d in dirs if not d.startswith('.')]
+
+            for file in files:
+                try:
+                    file_path = os.path.join(root, file)
+                    size = os.path.getsize(file_path)
+
+                    if size < 1000:  # Skip very small files
+                        continue
+
+                    # Get file extension
+                    ext = os.path.splitext(file)[1].lower()
+
+                    # Check if we have compression profile for this extension
+                    profile = None
+                    for profile_ext, profile_data in COMPRESSION_PROFILES.items():
+                        if file.lower().endswith(profile_ext):
+                            profile = profile_data
+                            ext = profile_ext
+                            break
+
+                    # If no profile found, use a default for non-compressed files
+                    if not profile:
+                        # Default: assume 0.7 ratio for unknown files (conservative estimate)
+                        profile = {'ratio': 0.85, 'priority': 'low', 'category': 'Other'}
+
+                    # Calculate potential savings
+                    compressed_size = int(size * profile['ratio'])
+                    savings = size - compressed_size
+
+                    # Track by category
+                    category = profile.get('category', 'Other')
+                    if category not in by_category:
+                        by_category[category] = {'count': 0, 'size': 0, 'savings': 0}
+                    by_category[category]['count'] += 1
+                    by_category[category]['size'] += size
+                    by_category[category]['savings'] += savings
+
+                    priority = profile.get('priority', 'low')
+                    total_compressible += size
+                    potential_savings += savings
+
+                    candidate = {
+                        'filename': file,
+                        'path': file_path,
+                        'extension': ext,
+                        'size': size,
+                        'compressed_size': compressed_size,
+                        'savings': savings,
+                        'compression_ratio': profile['ratio'],
+                        'category': category
+                    }
+
+                    # Only include if savings > 1MB for high priority, 10MB for medium
+                    min_savings = 1024 * 1024 if priority == 'high' else (10 * 1024 * 1024 if priority == 'medium' else 50 * 1024 * 1024)
+
+                    if savings >= min_savings or priority == 'high':
+                        candidates[priority].append(candidate)
+
+                except (OSError, PermissionError):
+                    continue
+
+        # Sort by savings
+        for priority in candidates:
+            candidates[priority].sort(key=lambda x: x['savings'], reverse=True)
+            candidates[priority] = candidates[priority][:15]  # Keep top 15 per priority
+
+        return {
+            "candidates": candidates,
+            "total_compressible_size": total_compressible,
+            "potential_savings": potential_savings,
+            "savings_percentage": (potential_savings / total_compressible * 100) if total_compressible > 0 else 0,
+            "by_category": [
+                {
+                    "name": category,
+                    "files": stats['count'],
+                    "size": stats['size'],
+                    "potential_savings": stats['savings']
+                }
+                for category, stats in sorted(by_category.items(), key=lambda x: x[1]['savings'], reverse=True)
+            ],
+            "scanned_path": path,
+            "analysis_time": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to analyze compression potential: {str(e)}")

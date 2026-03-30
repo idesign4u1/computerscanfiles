@@ -9,6 +9,7 @@ import FileTypeBreakdown from './FileTypeBreakdown';
 import LargeFiles from './LargeFiles';
 import CleanupRecommendations from './CleanupRecommendations';
 import FileAgeTracker from './FileAgeTracker';
+import CompressionAnalyzer from './CompressionAnalyzer';
 
 const Dashboard = ({ loading, setLoading }) => {
   const [stats, setStats] = useState(null);
@@ -321,6 +322,13 @@ const Dashboard = ({ loading, setLoading }) => {
         variants={itemVariants}
       >
         <FileAgeTracker scanPath="/" />
+      </motion.div>
+
+      {/* Compression Analyzer */}
+      <motion.div
+        variants={itemVariants}
+      >
+        <CompressionAnalyzer scanPath="/" />
       </motion.div>
 
       {/* Cleanup Recommendations */}

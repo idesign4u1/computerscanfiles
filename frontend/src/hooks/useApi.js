@@ -111,6 +111,12 @@ export const diskApi = {
     return axios.get(`${API_BASE_URL}/analytics/file-age-stats?${params}`);
   },
 
+  analyzeCompressionPotential: (path = null) => {
+    const params = new URLSearchParams();
+    if (path) params.append('path', path);
+    return axios.get(`${API_BASE_URL}/analytics/compression-analysis?${params}`);
+  },
+
   generatePdfReport: (path = null, reportType = 'full') => {
     const params = new URLSearchParams();
     if (path) params.append('path', path);
