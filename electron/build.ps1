@@ -14,8 +14,26 @@ $env:WIN_CSC_KEY_PASSWORD = ""
 Write-Host "Building frontend..." -ForegroundColor Cyan
 Push-Location ..\frontend
 npm run build
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Frontend build failed!" -ForegroundColor Red
+    exit $LASTEXITCODE
+}
 Pop-Location
+
+# Copy frontend build to electron directory for packaging
+Write-Host "Copying frontend build..." -ForegroundColor Cyan
+$frontendBuildSource = "..\frontend\build"
+$frontendBuildDest = ".\frontend\build"
+if (Test-Path $frontendBuildSource) {
+    if (Test-Path $frontendBuildDest) {
+        Remove-Item $frontendBuildDest -Recurse -Force
+    }
+    Copy-Item $frontendBuildSource $frontendBuildDest -Recurse
+    Write-Host "Frontend build copied successfully" -ForegroundColor Green
+} else {
+    Write-Host "Error: Frontend build not found at $frontendBuildSource" -ForegroundColor Red
+    exit 1
+}
 
 # Copy backend to electron directory for packaging
 Write-Host "Copying backend..." -ForegroundColor Cyan
