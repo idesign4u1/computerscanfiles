@@ -7,6 +7,7 @@ import { formatBytes } from '../utils/formatters';
 import ScanProgress from './ScanProgress';
 import FileTypeBreakdown from './FileTypeBreakdown';
 import LargeFiles from './LargeFiles';
+import CleanupRecommendations from './CleanupRecommendations';
 
 const Dashboard = ({ loading, setLoading }) => {
   const [stats, setStats] = useState(null);
@@ -312,6 +313,15 @@ const Dashboard = ({ loading, setLoading }) => {
         <motion.div variants={itemVariants}>
           <LargeFiles scanPath="/" />
         </motion.div>
+      </motion.div>
+
+      {/* Cleanup Recommendations */}
+      <motion.div
+        variants={itemVariants}
+        className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700"
+      >
+        <h3 className="font-semibold text-lg mb-4">Cleanup Recommendations</h3>
+        <CleanupRecommendations scanPath="/" />
       </motion.div>
       </motion.div>
     </motion.div>

@@ -98,4 +98,10 @@ export const diskApi = {
     params.append('limit', limit);
     return axios.get(`${API_BASE_URL}/analytics/large-files?${params}`);
   },
+
+  getCleanupRecommendations: (path = null) => {
+    const params = new URLSearchParams();
+    if (path) params.append('path', path);
+    return axios.get(`${API_BASE_URL}/analytics/cleanup-recommendations?${params}`);
+  },
 };
