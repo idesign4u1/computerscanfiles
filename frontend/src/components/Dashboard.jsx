@@ -5,6 +5,8 @@ import { FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
 import { diskApi } from '../hooks/useApi';
 import { formatBytes } from '../utils/formatters';
 import ScanProgress from './ScanProgress';
+import FileTypeBreakdown from './FileTypeBreakdown';
+import LargeFiles from './LargeFiles';
 
 const Dashboard = ({ loading, setLoading }) => {
   const [stats, setStats] = useState(null);
@@ -296,6 +298,21 @@ const Dashboard = ({ loading, setLoading }) => {
             </BarChart>
           </ResponsiveContainer>
         </motion.div>
+
+      {/* File Type Breakdown and Large Files Grid */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+      >
+        <motion.div variants={itemVariants}>
+          <FileTypeBreakdown scanPath="/" />
+        </motion.div>
+        <motion.div variants={itemVariants}>
+          <LargeFiles scanPath="/" />
+        </motion.div>
+      </motion.div>
       </motion.div>
     </motion.div>
     </>

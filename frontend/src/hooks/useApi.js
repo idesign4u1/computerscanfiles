@@ -85,4 +85,17 @@ export const diskApi = {
   getProgress: () => {
     return axios.get(`${API_BASE_URL}/scan/progress`);
   },
+
+  getFileTypes: (path = null) => {
+    const params = new URLSearchParams();
+    if (path) params.append('path', path);
+    return axios.get(`${API_BASE_URL}/analytics/file-types?${params}`);
+  },
+
+  getLargeFiles: (path = null, limit = 20) => {
+    const params = new URLSearchParams();
+    if (path) params.append('path', path);
+    params.append('limit', limit);
+    return axios.get(`${API_BASE_URL}/analytics/large-files?${params}`);
+  },
 };
