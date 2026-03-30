@@ -19,7 +19,8 @@ async function startServer() {
     const backendDir = path.join(__dirname, './backend');
 
     // Determine Python executable
-    const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
+    // Use 'py' (Windows Python launcher) on Windows for better compatibility
+    const pythonExecutable = process.platform === 'win32' ? 'py' : 'python3';
 
     console.log(`[Server] Starting Python server...`);
     console.log(`[Server] Python: ${pythonExecutable}`);
