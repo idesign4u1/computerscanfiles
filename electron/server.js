@@ -1,6 +1,7 @@
 const { spawn } = require('child_process');
 const path = require('path');
 const axios = require('axios');
+const { execSync } = require('child_process');
 
 const API_URL = 'http://127.0.0.1:8000';
 const HEALTH_CHECK_URL = `${API_URL}/health`;
@@ -29,8 +30,20 @@ async function startServer() {
     const backendDir = path.join(__dirname, backendPath);
 
     // Determine Python executable
-    // Use 'py' (Windows Python launcher) on Windows for better compatibility
-    const pythonExecutable = process.platform === 'win32' ? 'py' : 'python3';
+    // On Windows, use 'py' launcher; on Unix, use 'python3'
+    let pythonExecutable = process.platform === 'win32' ? 'py' : 'python3';
+
+    try {
+      // Try to find full path to Python executable
+      const which = process.platform === 'win32' ? 'where' : 'which';
+      const fullPath = execSync(`${which} ${pythonExecutable}`, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).split('\n')[0];
+      if (fullPath) {
+        pythonExecutable = fullPath.trim();
+      }
+    } catch (e) {
+      // If we can't find it, continue with the command name
+      console.log(`[Server] Could not resolve full Python path, using: ${pythonExecutable}`);
+    }
 
     console.log(`[Server] Starting Python server...`);
     console.log(`[Server] Python: ${pythonExecutable}`);
@@ -42,7 +55,6 @@ async function startServer() {
       stdio: ['ignore', 'pipe', 'pipe'],
       detached: false,
       env: process.env,  // Inherit parent process environment (includes PATH)
-      shell: true,  // Use shell to properly resolve commands on Windows
     });
 
     console.log(`[Server] Process spawned with PID: ${pythonProcess.pid}`);
