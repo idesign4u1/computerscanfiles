@@ -32,21 +32,12 @@
       "preload.js",
       "node_modules",
       "assets",
-      "frontend"
+      "frontend",
+      "backend"
     ],
     "extraMetadata": {
       "main": "main.js"
     },
-    "extraFiles": [
-      {
-        "from": "../backend",
-        "to": "backend"
-      },
-      {
-        "from": "../frontend/build",
-        "to": "frontend/build"
-      }
-    ],
     "directories": {
       "buildResources": "assets"
     },
