@@ -31,6 +31,7 @@ async function startServer() {
       cwd: backendDir,
       stdio: ['ignore', 'pipe', 'pipe'],
       detached: false,
+      env: process.env,  // Inherit parent process environment (includes PATH)
     });
 
     console.log(`[Server] Process spawned with PID: ${pythonProcess.pid}`);
