@@ -104,4 +104,22 @@ export const diskApi = {
     if (path) params.append('path', path);
     return axios.get(`${API_BASE_URL}/analytics/cleanup-recommendations?${params}`);
   },
+
+  generatePdfReport: (path = null, reportType = 'full') => {
+    const params = new URLSearchParams();
+    if (path) params.append('path', path);
+    params.append('report_type', reportType);
+    return axios.get(`${API_BASE_URL}/reports/generate-pdf?${params}`, {
+      responseType: 'blob'
+    });
+  },
+
+  generateCsvReport: (path = null, reportType = 'full') => {
+    const params = new URLSearchParams();
+    if (path) params.append('path', path);
+    params.append('report_type', reportType);
+    return axios.get(`${API_BASE_URL}/reports/generate-csv?${params}`, {
+      responseType: 'blob'
+    });
+  },
 };
