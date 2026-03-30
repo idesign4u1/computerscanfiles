@@ -52,7 +52,10 @@
       "buildResources": "assets"
     },
     "win": {
-      "target": []
+      "target": [],
+      "certificateFile": null,
+      "certificatePassword": null,
+      "sign": null
     },
     "nsis": {
       "oneClick": false,
