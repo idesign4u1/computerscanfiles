@@ -1,7 +1,8 @@
-const { spawn } = require('child_process');
+const { spawn, execFile } = require('child_process');
 const path = require('path');
 const axios = require('axios');
 const { execSync } = require('child_process');
+const fs = require('fs');
 
 const API_URL = 'http://127.0.0.1:8000';
 const HEALTH_CHECK_URL = `${API_URL}/health`;
@@ -29,20 +30,40 @@ async function startServer() {
     const pythonScript = path.join(__dirname, backendPath, 'main.py');
     const backendDir = path.join(__dirname, backendPath);
 
-    // Determine Python executable
-    // On Windows, use 'py' launcher; on Unix, use 'python3'
-    let pythonExecutable = process.platform === 'win32' ? 'py' : 'python3';
+    // Verify files exist before spawning
+    console.log(`[Server] Checking backend directory: ${backendDir}`);
+    if (!fs.existsSync(backendDir)) {
+      reject(new Error(`Backend directory not found: ${backendDir}`));
+      return;
+    }
 
-    try {
-      // Try to find full path to Python executable
-      const which = process.platform === 'win32' ? 'where' : 'which';
-      const fullPath = execSync(`${which} ${pythonExecutable}`, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).split('\n')[0];
-      if (fullPath) {
-        pythonExecutable = fullPath.trim();
+    console.log(`[Server] Checking Python script: ${pythonScript}`);
+    if (!fs.existsSync(pythonScript)) {
+      reject(new Error(`Python script not found: ${pythonScript}`));
+      return;
+    }
+
+    // Try both 'python' and 'py' on Windows
+    let pythonExecutable = null;
+    const pythonCandidates = process.platform === 'win32'
+      ? ['python', 'py', 'python3']
+      : ['python3', 'python'];
+
+    for (const candidate of pythonCandidates) {
+      try {
+        console.log(`[Server] Trying Python: ${candidate}`);
+        execSync(`${candidate} --version`, { stdio: 'pipe', encoding: 'utf8' });
+        pythonExecutable = candidate;
+        console.log(`[Server] Found Python: ${candidate}`);
+        break;
+      } catch (e) {
+        console.log(`[Server] ${candidate} not found`);
       }
-    } catch (e) {
-      // If we can't find it, continue with the command name
-      console.log(`[Server] Could not resolve full Python path, using: ${pythonExecutable}`);
+    }
+
+    if (!pythonExecutable) {
+      reject(new Error('Python not found in PATH'));
+      return;
     }
 
     console.log(`[Server] Starting Python server...`);
@@ -54,7 +75,7 @@ async function startServer() {
       cwd: backendDir,
       stdio: ['ignore', 'pipe', 'pipe'],
       detached: false,
-      env: process.env,  // Inherit parent process environment (includes PATH)
+      env: process.env,
     });
 
     console.log(`[Server] Process spawned with PID: ${pythonProcess.pid}`);
