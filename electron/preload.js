@@ -11,8 +11,6 @@ contextBridge.exposeInMainWorld('electron', {
   },
   // Platform info
   platform: process.platform,
-  // App info
-  appVersion: require('./package.json').version,
 });
 
 console.log('Preload script loaded');
