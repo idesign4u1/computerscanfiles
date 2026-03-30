@@ -25,6 +25,7 @@
   "build": {
     "appId": "com.diskspaceanalyzer.app",
     "productName": "Disk Space Analyzer",
+    "asar": false,
     "files": [
       "main.js",
       "server.js",
