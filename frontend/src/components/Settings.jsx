@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiCheckCircle, FiAlertCircle, FiFolder } from 'react-icons/fi';
 import { diskApi } from '../hooks/useApi';
 import ExportReports from './ExportReports';
+import ScheduledScans from './ScheduledScans';
 
 const Settings = () => {
   const [exclusions, setExclusions] = useState([]);
@@ -195,6 +196,16 @@ const Settings = () => {
             </motion.div>
           )}
         </div>
+      </motion.div>
+
+      {/* Scheduled Scans Section */}
+      <motion.div
+        variants={itemVariants}
+        className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700"
+      >
+        <h2 className="text-2xl font-bold mb-2">Scheduled Scans</h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">Set up automatic disk scans at regular intervals</p>
+        <ScheduledScans />
       </motion.div>
 
       {/* Export Reports Section */}

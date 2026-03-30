@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import scan, files, duplicates, analytics, reports
+from app.api import scan, files, duplicates, analytics, reports, scheduling
 
 app = FastAPI(
     title="Disk Space Analyzer API",
@@ -23,6 +23,7 @@ app.include_router(files.router, prefix="/api/files", tags=["Files"])
 app.include_router(duplicates.router, prefix="/api/duplicates", tags=["Duplicates"])
 app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
 app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
+app.include_router(scheduling.router, prefix="/api/scheduling", tags=["Scheduling"])
 
 @app.get("/")
 async def root():

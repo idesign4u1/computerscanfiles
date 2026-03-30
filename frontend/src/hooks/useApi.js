@@ -122,4 +122,35 @@ export const diskApi = {
       responseType: 'blob'
     });
   },
+
+  getScheduledScans: () => {
+    return axios.get(`${API_BASE_URL}/scheduling/scheduled-scans`);
+  },
+
+  createScheduledScan: (name, path, frequency, time) => {
+    const params = new URLSearchParams();
+    params.append('name', name);
+    params.append('path', path);
+    params.append('frequency', frequency);
+    params.append('time', time);
+    return axios.post(`${API_BASE_URL}/scheduling/scheduled-scans?${params}`);
+  },
+
+  updateScheduledScan: (scheduleId, updates) => {
+    const params = new URLSearchParams();
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params.append(key, value);
+      }
+    });
+    return axios.put(`${API_BASE_URL}/scheduling/scheduled-scans/${scheduleId}?${params}`);
+  },
+
+  deleteScheduledScan: (scheduleId) => {
+    return axios.delete(`${API_BASE_URL}/scheduling/scheduled-scans/${scheduleId}`);
+  },
+
+  runScheduledScan: (scheduleId) => {
+    return axios.post(`${API_BASE_URL}/scheduling/scheduled-scans/${scheduleId}/run`);
+  },
 };
