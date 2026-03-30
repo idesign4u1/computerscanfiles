@@ -14,8 +14,7 @@
     "dist": "electron-builder"
   },
   "dependencies": {
-    "axios": "^1.6.0",
-    "electron-is-dev": "^2.0.0"
+    "axios": "^1.6.0"
   },
   "devDependencies": {
     "electron": "^27.0.0",
@@ -53,10 +52,7 @@
       "buildResources": "assets"
     },
     "win": {
-      "target": [
-        "portable"
-      ],
-      "sign": null
+      "target": []
     },
     "nsis": {
       "oneClick": false,

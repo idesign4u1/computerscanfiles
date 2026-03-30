@@ -1,12 +1,14 @@
 const { app, BrowserWindow, Menu } = require('electron');
 const path = require('path');
-const isDev = require('electron-is-dev');
 const { startServer, stopServer } = require('./server');
 
 let mainWindow;
 
 // Determine if running in development or production
-const isDevelopment = isDev;
+// Check if we're in development by looking for node_modules in the app path
+const isDevelopment = process.env.NODE_ENV === 'development' ||
+                      (process.defaultApp === true) ||
+                      /[\\/]electron[\\/]dist[\\/]/.test(process.execPath) === false;
 console.log('Is Development:', isDevelopment);
 console.log('App Path:', app.getAppPath());
 
