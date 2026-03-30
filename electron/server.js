@@ -15,8 +15,18 @@ let pythonProcess = null;
  */
 async function startServer() {
   return new Promise((resolve, reject) => {
-    const pythonScript = path.join(__dirname, './backend/main.py');
-    const backendDir = path.join(__dirname, './backend');
+    // In packaged apps, backend is extracted outside app.asar
+    // __dirname points to app.asar, so we need ../backend
+    const isDevelopment = process.env.NODE_ENV === 'development' ||
+                          (process.defaultApp === true) ||
+                          /[\\/]electron[\\/]dist[\\/]/.test(process.execPath) === false;
+
+    const backendPath = isDevelopment
+      ? './backend'
+      : '../backend';
+
+    const pythonScript = path.join(__dirname, backendPath, 'main.py');
+    const backendDir = path.join(__dirname, backendPath);
 
     // Determine Python executable
     // Use 'py' (Windows Python launcher) on Windows for better compatibility
@@ -32,6 +42,7 @@ async function startServer() {
       stdio: ['ignore', 'pipe', 'pipe'],
       detached: false,
       env: process.env,  // Inherit parent process environment (includes PATH)
+      shell: true,  // Use shell to properly resolve commands on Windows
     });
 
     console.log(`[Server] Process spawned with PID: ${pythonProcess.pid}`);

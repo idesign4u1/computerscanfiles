@@ -30,19 +30,13 @@
       "server.js",
       "preload.js",
       "node_modules",
-      "assets"
+      "assets",
+      "frontend"
     ],
     "extraMetadata": {
       "main": "main.js"
     },
-    "asarUnpack": [
-      "backend/**/*"
-    ],
     "extraFiles": [
-      {
-        "from": "../frontend/build",
-        "to": "frontend/build"
-      },
       {
         "from": "../backend",
         "to": "backend"
