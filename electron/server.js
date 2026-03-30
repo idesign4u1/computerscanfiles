@@ -17,18 +17,9 @@ let pythonProcess = null;
  */
 async function startServer() {
   return new Promise((resolve, reject) => {
-    // In packaged apps, backend is extracted outside app.asar
-    // __dirname points to app.asar, so we need ../backend
-    const isDevelopment = process.env.NODE_ENV === 'development' ||
-                          (process.defaultApp === true) ||
-                          /[\\/]electron[\\/]dist[\\/]/.test(process.execPath) === false;
-
-    const backendPath = isDevelopment
-      ? './backend'
-      : '../backend';
-
-    const pythonScript = path.join(__dirname, backendPath, 'main.py');
-    const backendDir = path.join(__dirname, backendPath);
+    // With asar: false, backend is in resources/app/backend
+    const pythonScript = path.join(__dirname, './backend/main.py');
+    const backendDir = path.join(__dirname, './backend');
 
     // Verify files exist before spawning
     console.log(`[Server] Checking backend directory: ${backendDir}`);

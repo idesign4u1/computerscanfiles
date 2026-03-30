@@ -41,6 +41,10 @@
       {
         "from": "../backend",
         "to": "backend"
+      },
+      {
+        "from": "../frontend/build",
+        "to": "frontend/build"
       }
     ],
     "directories": {
