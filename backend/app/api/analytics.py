@@ -4,6 +4,7 @@ import os
 import time
 from datetime import datetime, timedelta
 from app.services.storage import DatabaseManager
+import hashlib
 
 router = APIRouter()
 db = DatabaseManager()
@@ -242,3 +243,72 @@ async def get_cleanup_recommendations(path: Optional[str] = None) -> Dict:
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate cleanup recommendations: {str(e)}")
+
+@router.get("/file-age-stats")
+async def get_file_age_stats(path: Optional[str] = None) -> Dict:
+    """Get file age distribution statistics"""
+    try:
+        if not path:
+            path = "/"
+            if os.name == "nt":
+                path = "C:\\"
+
+        current_time = time.time()
+        age_groups = {
+            'last_30_days': {'count': 0, 'size': 0},
+            'last_90_days': {'count': 0, 'size': 0},
+            'last_year': {'count': 0, 'size': 0},
+            'older_than_year': {'count': 0, 'size': 0}
+        }
+
+        total_size = 0
+        total_files = 0
+        sum_age = 0
+
+        # Walk through directory
+        for root, dirs, files in os.walk(path):
+            dirs[:] = [d for d in dirs if not d.startswith('.')]
+
+            for file in files:
+                try:
+                    file_path = os.path.join(root, file)
+                    size = os.path.getsize(file_path)
+                    mod_time = os.path.getmtime(file_path)
+
+                    # Calculate age in days
+                    age_days = (current_time - mod_time) / (24 * 3600)
+
+                    total_size += size
+                    total_files += 1
+                    sum_age += age_days
+
+                    # Categorize by age
+                    if age_days <= 30:
+                        age_groups['last_30_days']['count'] += 1
+                        age_groups['last_30_days']['size'] += size
+                    elif age_days <= 90:
+                        age_groups['last_90_days']['count'] += 1
+                        age_groups['last_90_days']['size'] += size
+                    elif age_days <= 365:
+                        age_groups['last_year']['count'] += 1
+                        age_groups['last_year']['size'] += size
+                    else:
+                        age_groups['older_than_year']['count'] += 1
+                        age_groups['older_than_year']['size'] += size
+
+                except (OSError, PermissionError):
+                    continue
+
+        # Calculate average age
+        average_age = sum_age / total_files if total_files > 0 else 0
+
+        return {
+            "age_groups": age_groups,
+            "total_files": total_files,
+            "total_size": total_size,
+            "average_age_days": average_age,
+            "scanned_path": path,
+            "analysis_time": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get file age stats: {str(e)}")

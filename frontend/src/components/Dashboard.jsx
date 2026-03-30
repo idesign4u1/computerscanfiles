@@ -8,6 +8,7 @@ import ScanProgress from './ScanProgress';
 import FileTypeBreakdown from './FileTypeBreakdown';
 import LargeFiles from './LargeFiles';
 import CleanupRecommendations from './CleanupRecommendations';
+import FileAgeTracker from './FileAgeTracker';
 
 const Dashboard = ({ loading, setLoading }) => {
   const [stats, setStats] = useState(null);
@@ -313,6 +314,13 @@ const Dashboard = ({ loading, setLoading }) => {
         <motion.div variants={itemVariants}>
           <LargeFiles scanPath="/" />
         </motion.div>
+      </motion.div>
+
+      {/* File Age Tracker */}
+      <motion.div
+        variants={itemVariants}
+      >
+        <FileAgeTracker scanPath="/" />
       </motion.div>
 
       {/* Cleanup Recommendations */}
