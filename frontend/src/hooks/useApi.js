@@ -81,4 +81,8 @@ export const diskApi = {
   removeExclusion: (folderPath) => {
     return axios.post(`${API_BASE_URL}/files/exclusions/remove?folder_path=${encodeURIComponent(folderPath)}`);
   },
+
+  getProgress: () => {
+    return axios.get(`${API_BASE_URL}/scan/progress`);
+  },
 };

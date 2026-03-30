@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
 import { diskApi } from '../hooks/useApi';
 import { formatBytes } from '../utils/formatters';
+import ScanProgress from './ScanProgress';
 
 const Dashboard = ({ loading, setLoading }) => {
   const [stats, setStats] = useState(null);
@@ -137,12 +138,14 @@ const Dashboard = ({ loading, setLoading }) => {
   const usagePercent = Math.round((stats.used_size / stats.total_size) * 100);
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-6"
-    >
+    <>
+      <ScanProgress isScanning={loading} onScanComplete={fetchStats} />
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6"
+      >
       {/* Header with Scan Button */}
       <motion.div
         variants={itemVariants}
@@ -295,6 +298,7 @@ const Dashboard = ({ loading, setLoading }) => {
         </motion.div>
       </motion.div>
     </motion.div>
+    </>
   );
 };
 
